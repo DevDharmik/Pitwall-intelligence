@@ -2,7 +2,7 @@
 
 > **Predictive Modeling of Formula 1 Constructor Performance and Sponsorship Value Using Machine Learning**
 
-[![Status](https://img.shields.io/badge/status-Sprint%202%20complete-green)](https://github.com/DevDharmik/Pitwall-intelligence)
+[![Status](https://img.shields.io/badge/status-Sprint%203%20in%20progress-blue)](https://github.com/DevDharmik/Pitwall-intelligence)
 [![Python](https://img.shields.io/badge/python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Capstone](https://img.shields.io/badge/M.Sc.-Capstone%202026-orange)](https://github.com/DevDharmik/Pitwall-intelligence)
@@ -80,7 +80,7 @@ flowchart TD
 | - | ---------------- | ------------------------------------ | ----------- |
 | 1 | 23 Apr – 4 May   | ETL pipeline · preprocessing · EDA   | Complete    |
 | 2 | 5 May – 18 May   | Baseline + advanced models           | Complete    |
-| 3 | 19 May – 1 Jun   | BVI synthesis · SHAP attribution     | Planned     |
+| 3 | 19 May – 1 Jun   | BVI synthesis · SHAP attribution     | In progress |
 | 4 | 2 Jun – 15 Jun   | Streamlit dashboard                  | Planned     |
 | 5 | 16 Jun – 22 Jun  | Report polish · viva prep            | Planned     |
 
@@ -104,29 +104,36 @@ flowchart TD
 
 > Numerical findings reflect current Sprint 1 notebook outputs and may be revised after end-to-end re-execution.
 
+## Sprint 2 — key findings
+
+Gradient Boosting predicts end-of-season constructor points at held-out 2024 R² **0.976** (five-fold CV R² 0.950), narrowly ahead of a strong Linear Regression baseline (held-out R² 0.956). Permutation importance shows average grid position accounts for almost all of the explained variance — qualifying pace is the spine of constructor performance. Full metrics: `reports/sprint2_all_models_metrics.csv`; details in `notebooks/docs/sprint_2_summary.md`.
+
 ## Repository structure
 
 ```
-PitWall/
+Pitwall-intelligence/
 ├── notebooks/
 │   ├── 01_etl_jolpica.ipynb         # Jolpica → SQLite, JSON caching + retry
 │   ├── 02_preprocessing.ipynb       # cleaning, feature engineering, season normalisation
 │   ├── 03_eda.ipynb                 # nine analyses driving Sprint 1 findings
-│   ├── 04_baseline_models.ipynb     # Linear Regression + Decision Tree
-│   ├── 05_advanced_models.ipynb     # Gradient Boosting + Logistic Regression + Platt
-│   └── 06_evaluation.ipynb          # 5-fold CV, RMSE/R², AUC-ROC on held-out season
-├── reports/                          # EDA visual outputs (PNG, CSV)
+│   ├── 04_features.ipynb            # team_season_features matrix
+│   ├── 05_baselines.ipynb           # Linear Regression + Decision Tree
+│   ├── 06_advanced.ipynb            # Gradient Boosting · 5-fold CV · permutation importance
+│   ├── 07_bvi_shap.ipynb            # podium classifier · SHAP · Brand Value Index
+│   └── docs/                        # per-sprint summary write-ups
+├── reports/                         # EDA + Sprint 2/3 figures and metrics (PNG, CSV)
+├── models/
+│   └── gbr_total_points_v1.joblib   # trained Gradient Boosting points model
 ├── data/
-│   ├── pitwall.db                    # SQLite store (gitignored)
-│   ├── raw/                          # cached Jolpica JSON (gitignored)
-│   └── exports/
+│   └── exports/                     # analytical table snapshots (CSV)
+├── pitwall.db                       # SQLite analytical store
 ├── requirements.txt
 ├── LICENSE
 ├── .gitignore
 └── README.md
 ```
 
-## Reproducing Sprint 1
+## Reproducing
 
 ```bash
 git clone https://github.com/DevDharmik/Pitwall-intelligence.git
@@ -134,13 +141,16 @@ cd Pitwall-intelligence
 pip install -r requirements.txt
 ```
 
-Open notebooks in order in Colab or Jupyter:
+Run the notebooks in order in Colab or Jupyter:
 
-1. `notebooks/01_etl_jolpica.ipynb` — populates `data/pitwall.db` from Jolpica on first run; cached JSON in `data/raw/` is reused subsequently.
-2. `notebooks/02_preprocessing.ipynb` — builds the analytical tables.
-3. `notebooks/03_eda.ipynb` — generates the figures in `reports/`.
+1. `01_etl_jolpica.ipynb` — populates `pitwall.db` from the Jolpica API on first run; cached JSON is reused subsequently.
+2. `02_preprocessing.ipynb` — builds the analytical tables.
+3. `03_eda.ipynb` — generates the Sprint 1 figures in `reports/`.
+4. `04_features.ipynb` — engineers the `team_season_features` matrix.
+5. `05_baselines.ipynb` · `06_advanced.ipynb` — Sprint 2 models and evaluation.
+6. `07_bvi_shap.ipynb` — Sprint 3 podium classifier, SHAP attribution, and Brand Value Index.
 
-End-to-end runtime: ~10 minutes on a free Colab tier, dominated by initial Jolpica ingestion.
+The repository ships a populated `pitwall.db`, so notebooks 04–07 can be run directly without re-ingesting from the API.
 
 ## Author
 
