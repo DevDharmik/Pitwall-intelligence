@@ -2,7 +2,7 @@
 
 > **Predictive Modeling of Formula 1 Constructor Performance and Sponsorship Value Using Machine Learning**
 
-[![Status](https://img.shields.io/badge/status-Sprint%203%20in%20progress-blue)](https://github.com/DevDharmik/Pitwall-intelligence)
+[![Status](https://img.shields.io/badge/status-Sprint%204%20in%20progress-blue)](https://github.com/DevDharmik/Pitwall-intelligence)
 [![Python](https://img.shields.io/badge/python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Capstone](https://img.shields.io/badge/M.Sc.-Capstone%202026-orange)](https://github.com/DevDharmik/Pitwall-intelligence)
@@ -80,8 +80,8 @@ flowchart TD
 | - | ---------------- | ------------------------------------ | ----------- |
 | 1 | 23 Apr – 4 May   | ETL pipeline · preprocessing · EDA   | Complete    |
 | 2 | 5 May – 18 May   | Baseline + advanced models           | Complete    |
-| 3 | 19 May – 1 Jun   | BVI synthesis · SHAP attribution     | In progress |
-| 4 | 2 Jun – 15 Jun   | Streamlit dashboard                  | Planned     |
+| 3 | 19 May – 1 Jun   | BVI synthesis · SHAP attribution     | Complete    |
+| 4 | 2 Jun – 15 Jun   | Streamlit dashboard                  | In progress |
 | 5 | 16 Jun – 22 Jun  | Report polish · viva prep            | Planned     |
 
 **Final report due:** 22 June 2026 · **Defence:** 6 July 2026
@@ -108,6 +108,10 @@ flowchart TD
 
 Gradient Boosting predicts end-of-season constructor points at held-out 2024 R² **0.976** (five-fold CV R² 0.950), narrowly ahead of a strong Linear Regression baseline (held-out R² 0.956). Permutation importance shows average grid position accounts for almost all of the explained variance — qualifying pace is the spine of constructor performance. Full metrics: `reports/sprint2_all_models_metrics.csv`; details in `notebooks/docs/sprint_2_summary.md`.
 
+## Sprint 3 — key findings
+
+The two-dimensional Brand Value Index is computed for all 112 team-seasons on a 0–100 scale, combining the Sprint 2 points model with a new calibrated podium-probability classifier — Logistic Regression with Platt scaling, held-out 2024 AUC-ROC **0.928** and Brier 0.071. SHAP attribution on both models confirms starting grid position as the dominant feature. Across 2014–2024 the BVI tracks championship points at a mean Spearman ρ of **0.718** — close enough to be credible, loose enough that the Consistency dimension meaningfully re-ranks teams (2018 Williams, tenth on points, rises to third on reliable grid-to-finish conversion). Scores: `data/exports/bvi_scores.csv`; figures in `reports/`; details in `notebooks/docs/sprint_3_summary.md`.
+
 ## Repository structure
 
 ```
@@ -125,7 +129,7 @@ Pitwall-intelligence/
 ├── models/
 │   └── gbr_total_points_v1.joblib   # trained Gradient Boosting points model
 ├── data/
-│   └── exports/                     # analytical table snapshots (CSV)
+│   └── exports/                     # analytical table snapshots, incl. bvi_scores.csv
 ├── pitwall.db                       # SQLite analytical store
 ├── requirements.txt
 ├── LICENSE
