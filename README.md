@@ -2,10 +2,10 @@
 
 > **Predictive Modeling of Formula 1 Constructor Performance and Sponsorship Value Using Machine Learning**
 
-[![Status](https://img.shields.io/badge/status-Sprint%204%20in%20progress-blue)](https://github.com/DevDharmik/Pitwall-intelligence)
-[![Python](https://img.shields.io/badge/python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
-[![Capstone](https://img.shields.io/badge/M.Sc.-Capstone%202026-orange)](https://github.com/DevDharmik/Pitwall-intelligence)
+![Status](https://img.shields.io/badge/status-Sprint%204%20%C2%B7%20dashboard-blue)
+![Python](https://img.shields.io/badge/python-3.11-3776AB?logo=python&logoColor=white)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Capstone](https://img.shields.io/badge/M.Sc.-Capstone%202026-orange)
 
 A data-driven Brand Value Index (BVI) for Formula 1 constructors, combining machine-learning performance prediction with SHAP-based explainability — quantifying what is currently a USD 1.8 billion sponsorship market priced largely on perception.
 
@@ -23,16 +23,25 @@ Formula 1's sponsorship market exceeds USD 1.8 billion annually, with a global a
 
 Two-dimensional composite, season-normalised per constructor:
 
-| Dimension       | Weight | Components                                              |
-| --------------- | ------ | ------------------------------------------------------- |
-| **Performance** | 60%    | Predicted championship points · podium probability      |
-| **Consistency** | 40%    | Reliability indicators · qualifying-to-race delta       |
+| Dimension | Weight | Components |
+| --- | --- | --- |
+| **Performance** | 60% | Predicted championship points · podium probability |
+| **Consistency** | 40% | Reliability indicators · qualifying-to-race delta |
 
-Min-max normalisation within each season ensures dominant-era seasons do not suppress midfield-team scores in cross-season comparison.
+Min-max normalisation **within each season** ensures dominant-era seasons do not suppress midfield-team scores in cross-season comparison. Final score: `0.60 × Performance + 0.40 × Consistency`, scaled 0–100.
+
+## Results so far
+
+- **Sprint 1 — Qualifying pace anchors performance.** Average qualifying gap-to-pole correlates with total constructor points at **Pearson r ≈ −0.79** across 112 team-seasons (p < 0.001).
+- **Sprint 2 — Models trained.** Baselines (Linear Regression, Decision Tree) plus advanced models: Gradient Boosting for points, and a Logistic Regression for podium probability.
+- **Sprint 3 — BVI synthesised and explained.** The podium classifier is calibrated with Platt scaling and scores **AUC-ROC 0.928 / Brier 0.071** on a held-out 2024 season. SHAP attribution (TreeExplainer for the regressor, LinearExplainer for the classifier) shows **starting grid position is the dominant feature for both models**. The finished BVI tracks the championship at **Spearman ρ = 0.718** — close, but deliberately not a copy of the points table.
+- **Sprint 4 — Interactive dashboard** (see below).
+
+> One illustration of why the index is not just a re-skinned points table: in 2018 Williams finished **10th (last)** on championship points but ranks **3rd** on the BVI — a slow car that reliably converted its grid slots into finishes.
 
 ## Headline finding — Sprint 1
 
-![Qualifying pace predicts championship points](reports/eda_06_qual_vs_points.png)
+![Qualifying pace predicts championship points](https://github.com/DevDharmik/Pitwall-intelligence/raw/main/reports/eda_06_qual_vs_points.png)
 
 Average qualifying gap-to-pole correlates with total constructor points at **Pearson r ≈ –0.79** across 112 team-seasons (p < 0.001). Qualifying pace anchors the BVI Performance dimension.
 
@@ -40,33 +49,49 @@ Average qualifying gap-to-pole correlates with total constructor points at **Pea
 
 Single source — **[Jolpica-F1 API](https://api.jolpi.ca/ergast/)**, an actively maintained mirror of the Ergast Developer API for Formula 1. No Kaggle imports, no third-party aggregators, no synthetic data. Every record is fetched live and cached as JSON for reproducibility.
 
-**Focal era:** V6 hybrid, 2014–2024 — eleven complete seasons under stable technical regulations, enabling like-for-like cross-season comparison.
+**Focal era:** V6 hybrid, 2014–2025 — stable technical regulations enabling like-for-like cross-season comparison. Analytical scope is fixed at **2014–2024**.
 
-| Table                   | Rows  | Coverage                       |
-| ----------------------- | ----- | ------------------------------ |
-| `races`                 | 228   | Grands Prix, 2014–2024         |
-| `results`               | 4,626 | Race finishing data            |
-| `qualifying`            | 4,610 | Q1 / Q2 / Q3 session times     |
-| `constructor_standings` | 112   | Constructor-season finals      |
-| `driver_standings`      | 247   | Driver-season finals           |
-| `constructors` · `drivers` | — | Team and driver metadata       |
+| Table | Rows | Coverage |
+| --- | --- | --- |
+| `races` | 228 | Grands Prix, 2014–2024 |
+| `results` | 4,626 | Race finishing data |
+| `qualifying` | 4,610 | Q1 / Q2 / Q3 session times |
+| `constructor_standings` | 112 | Constructor-season finals |
+| `driver_standings` | 247 | Driver-season finals |
+| `constructors` · `drivers` | — | Team and driver metadata |
 
 ## Methodology
 
-```mermaid
-flowchart TD
-    A[Jolpica API] --> B[ETL<br/>requests + tenacity · JSON cache]
-    B --> C[Preprocessing<br/>DNF typing · qual parsing · gap-to-pole · season norm]
-    C --> D[EDA<br/>9 analyses]
-    D --> E{Models}
-    E --> F[Baseline<br/>Linear Regression · Decision Tree]
-    E --> G[Advanced<br/>Gradient Boosting · Logistic + Platt]
-    F --> H[Evaluation<br/>5-fold CV · RMSE / R² · AUC-ROC]
-    G --> H
-    H --> I[SHAP attribution]
-    I --> J[BVI synthesis<br/>Performance 60% + Consistency 40%]
-    J --> K[Streamlit dashboard]
 ```
+Jolpica API
+  └─► ETL (requests + tenacity, JSON cache)
+      └─► Preprocessing (DNF typing · qual parsing · gap-to-pole · season norm)
+          └─► EDA (9 analyses)
+              └─► Models
+                  ├─ Baseline: Linear Regression · Decision Tree
+                  └─ Advanced: Gradient Boosting · Logistic Regression + Platt
+                      └─► Evaluation (5-fold CV RMSE / R² · AUC-ROC on held-out season)
+                          └─► SHAP attribution
+                              └─► BVI synthesis (Performance 60% + Consistency 40%)
+                                  └─► Streamlit dashboard
+```
+
+## Dashboard (Sprint 4)
+
+An interactive, sponsor-facing Streamlit app that wraps the BVI and its SHAP explanations into one tool. Pick any season (2014–2024) and explore:
+
+- **Season standings** — ranked BVI bar chart and a table with each constructor's BVI, its Performance and Consistency components, championship rank and points side by side.
+- **BVI map** — the full constructor-by-season heatmap, season-normalised on the 0–100 scale.
+- **Performance vs Consistency** — a scatter of the two BVI dimensions with median quadrant lines (fast-but-fragile vs slow-but-dependable).
+- **Constructor trajectory** — BVI across the era for any selection of teams.
+- **What drives the score** — the SHAP explanation, the calibrated-classifier metrics, and the "most underrated / most flattered by the points table" headline for the chosen season.
+
+```bash
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+The app reads the season-normalised BVI table (`data/exports/bvi_scores.csv`) produced in Sprint 3 and the SHAP beeswarm PNGs from `reports/`. It retrains nothing — it consumes the Sprint 2–3 outputs directly.
 
 ## Tech stack
 
@@ -76,61 +101,34 @@ flowchart TD
 
 ## Sprint plan
 
-| # | Window           | Focus                                | Status      |
-| - | ---------------- | ------------------------------------ | ----------- |
-| 1 | 23 Apr – 4 May   | ETL pipeline · preprocessing · EDA   | Complete    |
-| 2 | 5 May – 18 May   | Baseline + advanced models           | Complete    |
-| 3 | 19 May – 1 Jun   | BVI synthesis · SHAP attribution     | Complete    |
-| 4 | 2 Jun – 15 Jun   | Streamlit dashboard                  | In progress |
-| 5 | 16 Jun – 22 Jun  | Report polish · viva prep            | Planned     |
+| # | Window | Focus | Status |
+| --- | --- | --- | --- |
+| 1 | 23 Apr – 4 May | ETL pipeline · preprocessing · EDA | ✅ Complete |
+| 2 | 5 May – 18 May | Baseline + advanced models | ✅ Complete |
+| 3 | 19 May – 1 Jun | BVI synthesis · SHAP attribution | ✅ Complete |
+| 4 | 2 Jun – 15 Jun | Streamlit dashboard | 🔵 In progress |
+| 5 | 16 Jun – 22 Jun | Report polish · viva prep | ⚪ Planned |
 
 **Final report due:** 22 June 2026 · **Defence:** 6 July 2026
-
-## Sprint 1 — key findings
-
-1. **Qualifying speed is the strongest single predictor of season points.** Pearson r ≈ –0.79 across 112 team-seasons (p < 0.001), anchoring qualifying pace as a primary Performance input.
-2. **The era is defined by sustained dominance.** Mercedes won eight consecutive Constructors' Championships (2014–2021), followed by Red Bull (2022, 2023) and McLaren (2024) — concentration that motivates within-season normalisation.
-3. **Constructor rank volatility varies sharply across the era**, feeding the Consistency dimension:
-
-   | Constructor  | σ (rank) | Tier          |
-   | ------------ | -------- | ------------- |
-   | Williams     | 2.83     | Most volatile |
-   | McLaren      | 2.44     | Volatile      |
-   | Mercedes     | 1.04     | Stable        |
-   | Red Bull     | 0.92     | Stable        |
-   | Force India  | 0.84     | Most stable   |
-
-4. **Season concentration ranges from 0.503 (2020, most competitive) to 0.619 (2016, most concentrated)**, with era-wide mean Gini 0.556.
-
-> Numerical findings reflect current Sprint 1 notebook outputs and may be revised after end-to-end re-execution.
-
-## Sprint 2 — key findings
-
-Gradient Boosting predicts end-of-season constructor points at held-out 2024 R² **0.976** (five-fold CV R² 0.950), narrowly ahead of a strong Linear Regression baseline (held-out R² 0.956). Permutation importance shows average grid position accounts for almost all of the explained variance — qualifying pace is the spine of constructor performance. Full metrics: `reports/sprint2_all_models_metrics.csv`; details in `notebooks/docs/sprint_2_summary.md`.
-
-## Sprint 3 — key findings
-
-The two-dimensional Brand Value Index is computed for all 112 team-seasons on a 0–100 scale, combining the Sprint 2 points model with a new calibrated podium-probability classifier — Logistic Regression with Platt scaling, held-out 2024 AUC-ROC **0.928** and Brier 0.071. SHAP attribution on both models confirms starting grid position as the dominant feature. Across 2014–2024 the BVI tracks championship points at a mean Spearman ρ of **0.718** — close enough to be credible, loose enough that the Consistency dimension meaningfully re-ranks teams (2018 Williams, tenth on points, rises to third on reliable grid-to-finish conversion). Scores: `data/exports/bvi_scores.csv`; figures in `reports/`; details in `notebooks/docs/sprint_3_summary.md`.
 
 ## Repository structure
 
 ```
-Pitwall-intelligence/
+PitWall/
 ├── notebooks/
-│   ├── 01_etl_jolpica.ipynb         # Jolpica → SQLite, JSON caching + retry
-│   ├── 02_preprocessing.ipynb       # cleaning, feature engineering, season normalisation
-│   ├── 03_eda.ipynb                 # nine analyses driving Sprint 1 findings
-│   ├── 04_features.ipynb            # team_season_features matrix
-│   ├── 05_baselines.ipynb           # Linear Regression + Decision Tree
-│   ├── 06_advanced.ipynb            # Gradient Boosting · 5-fold CV · permutation importance
-│   ├── 07_bvi_shap.ipynb            # podium classifier · SHAP · Brand Value Index
-│   └── docs/                        # per-sprint summary write-ups
-├── reports/                         # EDA + Sprint 2/3 figures and metrics (PNG, CSV)
-├── models/
-│   └── gbr_total_points_v1.joblib   # trained Gradient Boosting points model
+│   ├── 01_etl_jolpica.ipynb      # Jolpica → SQLite, JSON caching + retry
+│   ├── 02_preprocessing.ipynb    # cleaning, feature engineering, season normalisation
+│   ├── 03_eda.ipynb              # nine analyses driving Sprint 1 findings
+│   ├── 04_features.ipynb         # team-season feature matrix
+│   ├── 05_baseline_models.ipynb  # Linear Regression · Decision Tree
+│   ├── 06_advanced_models.ipynb  # Gradient Boosting points model
+│   └── 07_bvi_shap.ipynb         # podium classifier · SHAP · BVI synthesis
+├── app.py                        # Streamlit dashboard (Sprint 4)
+├── reports/                      # EDA + SHAP visual outputs (PNG, CSV)
 ├── data/
-│   └── exports/                     # analytical table snapshots, incl. bvi_scores.csv
-├── pitwall.db                       # SQLite analytical store
+│   ├── pitwall.db                # SQLite store (gitignored)
+│   ├── raw/                      # cached Jolpica JSON (gitignored)
+│   └── exports/                  # bvi_scores.csv and other exports
 ├── requirements.txt
 ├── LICENSE
 ├── .gitignore
@@ -145,16 +143,9 @@ cd Pitwall-intelligence
 pip install -r requirements.txt
 ```
 
-Run the notebooks in order in Colab or Jupyter:
+Open the notebooks in order (`01`→`07`) in Colab or Jupyter; they detect Colab vs a local environment automatically. `01_etl_jolpica.ipynb` populates `data/pitwall.db` from Jolpica on first run (cached JSON in `data/raw/` is reused afterwards), and `07_bvi_shap.ipynb` writes `data/exports/bvi_scores.csv`. Then launch the dashboard with `streamlit run app.py`.
 
-1. `01_etl_jolpica.ipynb` — populates `pitwall.db` from the Jolpica API on first run; cached JSON is reused subsequently.
-2. `02_preprocessing.ipynb` — builds the analytical tables.
-3. `03_eda.ipynb` — generates the Sprint 1 figures in `reports/`.
-4. `04_features.ipynb` — engineers the `team_season_features` matrix.
-5. `05_baselines.ipynb` · `06_advanced.ipynb` — Sprint 2 models and evaluation.
-6. `07_bvi_shap.ipynb` — Sprint 3 podium classifier, SHAP attribution, and Brand Value Index.
-
-The repository ships a populated `pitwall.db`, so notebooks 04–07 can be run directly without re-ingesting from the API.
+End-to-end notebook runtime: ~10 minutes on a free Colab tier, dominated by initial Jolpica ingestion.
 
 ## Author
 
@@ -165,4 +156,4 @@ M.Sc. Data Science · University of Europe for Applied Sciences (Berlin / Potsda
 
 ## License
 
-Code, reports, and figures released under the [MIT License](LICENSE).
+[MIT License](LICENSE) for code. Reports and figures licensed under [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/).
