@@ -2,12 +2,15 @@
 
 > **Predictive Modeling of Formula 1 Constructor Performance and Sponsorship Value Using Machine Learning**
 
-![Status](https://img.shields.io/badge/status-Sprint%204%20%C2%B7%20dashboard-blue)
+![Status](https://img.shields.io/badge/status-Sprint%204%20%C2%B7%20dashboard%20live-blue)
 ![Python](https://img.shields.io/badge/python-3.11-3776AB?logo=python&logoColor=white)
+[![Live dashboard](https://img.shields.io/badge/live-Streamlit%20dashboard-E10600?logo=streamlit&logoColor=white)](https://nnx9pdbkj7agwwsbn2m7bb.streamlit.app/)
 ![License](https://img.shields.io/badge/license-MIT-green)
 ![Capstone](https://img.shields.io/badge/M.Sc.-Capstone%202026-orange)
 
 A data-driven Brand Value Index (BVI) for Formula 1 constructors, combining machine-learning performance prediction with SHAP-based explainability — quantifying what is currently a USD 1.8 billion sponsorship market priced largely on perception.
+
+**▶ Live dashboard:** https://nnx9pdbkj7agwwsbn2m7bb.streamlit.app/
 
 ---
 
@@ -33,11 +36,11 @@ Min-max normalisation **within each season** ensures dominant-era seasons do not
 ## Results so far
 
 - **Sprint 1 — Qualifying pace anchors performance.** Average qualifying gap-to-pole correlates with total constructor points at **Pearson r ≈ −0.79** across 112 team-seasons (p < 0.001).
-- **Sprint 2 — Models trained.** Baselines (Linear Regression, Decision Tree) plus advanced models: Gradient Boosting for points, and a Logistic Regression for podium probability.
-- **Sprint 3 — BVI synthesised and explained.** The podium classifier is calibrated with Platt scaling and scores **AUC-ROC 0.928 / Brier 0.071** on a held-out 2024 season. SHAP attribution (TreeExplainer for the regressor, LinearExplainer for the classifier) shows **starting grid position is the dominant feature for both models**. The finished BVI tracks the championship at **Spearman ρ = 0.718** — close, but deliberately not a copy of the points table.
-- **Sprint 4 — Interactive dashboard** (see below).
+- **Sprint 2 — Models trained and validated.** Baselines (Linear Regression, Decision Tree) plus advanced models: **Gradient Boosting** for points and a **Logistic Regression** for podium probability. On a held-out **2024** season, the Gradient Boosting points model reaches **CV R² 0.95 / test R² 0.976** (RMSE 38.7, MAE ≈ 29) — clearly ahead of the Linear Regression (test R² 0.956) and Decision Tree (0.851) baselines.
+- **Sprint 3 — BVI synthesised and explained.** The podium classifier is calibrated with Platt scaling and scores **AUC-ROC 0.928 / Brier 0.071** on a held-out 2024 season. SHAP attribution (TreeExplainer for the regressor, LinearExplainer for the classifier) shows **starting grid position is the dominant feature for both models**. The finished BVI tracks the championship at **Spearman ρ ≈ 0.72** — close, but deliberately not a copy of the points table.
+- **Sprint 4 — Interactive dashboard, now live** (see below).
 
-> One illustration of why the index is not just a re-skinned points table: in 2018 Williams finished **10th (last)** on championship points but ranks **3rd** on the BVI — a slow car that reliably converted its grid slots into finishes.
+> One illustration of why the index is not just a re-skinned points table: in 2018 Williams finished **10th (last)** on championship points but ranks **3rd** on the BVI (score 33.3) — a slow car that reliably converted its grid slots into finishes.
 
 ## Headline finding — Sprint 1
 
@@ -49,7 +52,7 @@ Average qualifying gap-to-pole correlates with total constructor points at **Pea
 
 Single source — **[Jolpica-F1 API](https://api.jolpi.ca/ergast/)**, an actively maintained mirror of the Ergast Developer API for Formula 1. No Kaggle imports, no third-party aggregators, no synthetic data. Every record is fetched live and cached as JSON for reproducibility.
 
-**Focal era:** V6 hybrid, 2014–2025 — stable technical regulations enabling like-for-like cross-season comparison. Analytical scope is fixed at **2014–2024**.
+**Focal era:** V6 hybrid, **2014–2024** — stable technical regulations enabling like-for-like cross-season comparison.
 
 | Table | Rows | Coverage |
 | --- | --- | --- |
@@ -78,20 +81,20 @@ Jolpica API
 
 ## Dashboard (Sprint 4)
 
-An interactive, sponsor-facing Streamlit app that wraps the BVI and its SHAP explanations into one tool. Pick any season (2014–2024) and explore:
+A live, sponsor-facing Streamlit app that wraps the BVI and its model explanations into one interactive tool. A sidebar season slider (2014–2024) and an **All-era view** toggle drive a header KPI strip (top brand value, most consistent team, biggest over-performer, wins on the grid) and five views:
 
-- **Season standings** — ranked BVI bar chart and a table with each constructor's BVI, its Performance and Consistency components, championship rank and points side by side.
-- **BVI map** — the full constructor-by-season heatmap, season-normalised on the 0–100 scale.
-- **Performance vs Consistency** — a scatter of the two BVI dimensions with median quadrant lines (fast-but-fragile vs slow-but-dependable).
-- **Constructor trajectory** — BVI across the era for any selection of teams.
-- **What drives the score** — the SHAP explanation, the calibrated-classifier metrics, and the "most underrated / most flattered by the points table" headline for the chosen season.
+- **Grid** — the signature broadcast "timing tower": constructors ranked by BVI, each bar split into its Performance and Consistency contribution, alongside a *value-vs-championship* scatter that surfaces the teams the BVI rates differently from the final standings.
+- **Head-to-head** — pick any two constructors and compare them on a normalised radar (Performance, Consistency, Brand value, Qualifying pace, Reliability, Podiums, Wins) plus a stat-by-stat table with the winner of each row highlighted.
+- **Perf × Consistency** — a scatter of the two BVI dimensions with mid-point quadrant lines (dominant · reliable-but-slow · fast-but-fragile · backmarkers); bubble size encodes championship points.
+- **Evolution** — BVI trajectories across 2014–2024 for any selection of teams, with the Mercedes and Red Bull title eras shaded behind.
+- **The model** — the validated metric cards (test R² 0.976, CV R² 0.95, RMSE 38.7, MAE 29), a model leaderboard, the Gradient Boosting feature importances, the 2024 predicted-vs-actual points, and the SHAP beeswarm explanations.
 
 ```bash
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
-The app reads the season-normalised BVI table (`data/exports/bvi_scores.csv`) produced in Sprint 3 and the SHAP beeswarm PNGs from `reports/`. It retrains nothing — it consumes the Sprint 2–3 outputs directly.
+The app reads the season-normalised BVI table (`data/exports/bvi_scores.csv`) and the team-season feature table (`data/exports/team_season_stats.csv`), loads the pre-trained model (`models/gbr_total_points_v1.joblib`) to surface its feature importances, and the SHAP beeswarm PNGs from `reports/`. It **retrains nothing** — it consumes the Sprint 2–3 outputs directly.
 
 ## Tech stack
 
@@ -106,7 +109,7 @@ The app reads the season-normalised BVI table (`data/exports/bvi_scores.csv`) pr
 | 1 | 23 Apr – 4 May | ETL pipeline · preprocessing · EDA | ✅ Complete |
 | 2 | 5 May – 18 May | Baseline + advanced models | ✅ Complete |
 | 3 | 19 May – 1 Jun | BVI synthesis · SHAP attribution | ✅ Complete |
-| 4 | 2 Jun – 15 Jun | Streamlit dashboard | 🔵 In progress |
+| 4 | 2 Jun – 15 Jun | Streamlit dashboard | 🔵 In progress · deployed |
 | 5 | 16 Jun – 22 Jun | Report polish · viva prep | ⚪ Planned |
 
 **Final report due:** 22 June 2026 · **Defence:** 6 July 2026
@@ -124,11 +127,13 @@ PitWall/
 │   ├── 06_advanced_models.ipynb  # Gradient Boosting points model
 │   └── 07_bvi_shap.ipynb         # podium classifier · SHAP · BVI synthesis
 ├── app.py                        # Streamlit dashboard (Sprint 4)
+├── models/
+│   └── gbr_total_points_v1.joblib  # trained Gradient Boosting model (2014–2023 → 2024 test)
 ├── reports/                      # EDA + SHAP visual outputs (PNG, CSV)
 ├── data/
 │   ├── pitwall.db                # SQLite store (gitignored)
 │   ├── raw/                      # cached Jolpica JSON (gitignored)
-│   └── exports/                  # bvi_scores.csv and other exports
+│   └── exports/                  # bvi_scores.csv, team_season_stats.csv, and other exports
 ├── requirements.txt
 ├── LICENSE
 ├── .gitignore
