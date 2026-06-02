@@ -325,6 +325,7 @@ def find_report_fig(filename: str) -> Path | None:
 
 # Plotly dark template tuned to the brand -----------------------------------
 def style_fig(fig: go.Figure, height: int = 420) -> go.Figure:
+    existing_title = fig.layout.title.text or ""
     fig.update_layout(
         template="plotly_dark",
         height=height,
@@ -333,7 +334,7 @@ def style_fig(fig: go.Figure, height: int = 420) -> go.Figure:
         font=dict(family="Barlow, sans-serif", color=TXT, size=13),
         margin=dict(l=10, r=10, t=44, b=10),
         legend=dict(bgcolor="rgba(0,0,0,0)", font=dict(size=11)),
-        title=dict(font=dict(family="Rajdhani, sans-serif", size=18, color="#fff")),
+        title=dict(text=existing_title, font=dict(family="Rajdhani, sans-serif", size=18, color="#fff")),
         hoverlabel=dict(font=dict(family="JetBrains Mono, monospace", size=12)),
     )
     fig.update_xaxes(gridcolor="rgba(255,255,255,0.06)", zeroline=False)
@@ -668,6 +669,7 @@ with tab_h2h:
             )
         fig.update_layout(
             polar=dict(
+                domain=dict(x=[0.12, 0.88], y=[0.06, 0.94]),
                 bgcolor="rgba(255,255,255,0.02)",
                 radialaxis=dict(visible=True, range=[0, 1], showticklabels=False,
                                 gridcolor="rgba(255,255,255,0.12)"),
