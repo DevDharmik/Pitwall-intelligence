@@ -2,15 +2,15 @@
 
 > **Predictive Modeling of Formula 1 Constructor Performance and Sponsorship Value Using Machine Learning**
 
-![Status](https://img.shields.io/badge/status-Sprint%204%20%C2%B7%20dashboard%20live-blue)
+![Status](https://img.shields.io/badge/status-Sprints_1--4_complete-success)
+![Sprint](https://img.shields.io/badge/Sprint_5-report_%26_viva_prep-blue)
 ![Python](https://img.shields.io/badge/python-3.11-3776AB?logo=python&logoColor=white)
-[![Live dashboard](https://img.shields.io/badge/live-Streamlit%20dashboard-E10600?logo=streamlit&logoColor=white)](https://nnx9pdbkj7agwwsbn2m7bb.streamlit.app/)
 ![License](https://img.shields.io/badge/license-MIT-green)
-![Capstone](https://img.shields.io/badge/M.Sc.-Capstone%202026-orange)
+![Dashboard](https://img.shields.io/badge/dashboard-live-success?logo=streamlit&logoColor=white)
 
-A data-driven Brand Value Index (BVI) for Formula 1 constructors, combining machine-learning performance prediction with SHAP-based explainability — quantifying what is currently a USD 1.8 billion sponsorship market priced largely on perception.
+A data-driven **Brand Value Index (BVI)** for Formula 1 constructors, combining machine-learning performance prediction with SHAP-based explainability — quantifying what is currently a USD 1.8 billion sponsorship market priced largely on perception.
 
-**▶ Live dashboard:** https://nnx9pdbkj7agwwsbn2m7bb.streamlit.app/
+**Live dashboard →** https://nnx9pdbkj7agwwsbn2m7bb.streamlit.app/
 
 ---
 
@@ -31,28 +31,57 @@ Two-dimensional composite, season-normalised per constructor:
 | **Performance** | 60% | Predicted championship points · podium probability |
 | **Consistency** | 40% | Reliability indicators · qualifying-to-race delta |
 
-Min-max normalisation **within each season** ensures dominant-era seasons do not suppress midfield-team scores in cross-season comparison. Final score: `0.60 × Performance + 0.40 × Consistency`, scaled 0–100.
+Min-max normalisation within each season ensures dominant-era seasons do not suppress midfield-team scores in cross-season comparison.
 
-## Results so far
+## Live dashboard
 
-- **Sprint 1 — Qualifying pace anchors performance.** Average qualifying gap-to-pole correlates with total constructor points at **Pearson r ≈ −0.79** across 112 team-seasons (p < 0.001).
-- **Sprint 2 — Models trained and validated.** Baselines (Linear Regression, Decision Tree) plus advanced models: **Gradient Boosting** for points and a **Logistic Regression** for podium probability. On a held-out **2024** season, the Gradient Boosting points model reaches **CV R² 0.95 / test R² 0.976** (RMSE 38.7, MAE ≈ 29) — clearly ahead of the Linear Regression (test R² 0.956) and Decision Tree (0.851) baselines.
-- **Sprint 3 — BVI synthesised and explained.** The podium classifier is calibrated with Platt scaling and scores **AUC-ROC 0.928 / Brier 0.071** on a held-out 2024 season. SHAP attribution (TreeExplainer for the regressor, LinearExplainer for the classifier) shows **starting grid position is the dominant feature for both models**. The finished BVI tracks the championship at **Spearman ρ ≈ 0.72** — close, but deliberately not a copy of the points table.
-- **Sprint 4 — Interactive dashboard, now live** (see below).
+A Streamlit application (dark telemetry aesthetic) reads pre-computed exports and the trained model — no live API calls at view time, so it loads instantly and reproducibly. Five tabs:
 
-> One illustration of why the index is not just a re-skinned points table: in 2018 Williams finished **10th (last)** on championship points but ranks **3rd** on the BVI (score 33.3) — a slow car that reliably converted its grid slots into finishes.
+| Tab | Purpose |
+| --- | --- |
+| **Grid** | Full BVI leaderboard, season-by-season |
+| **Head-to-Head** | Constructor-vs-constructor comparison across the index |
+| **Perf × Consistency** | The two BVI dimensions plotted against each other |
+| **Evolution** | BVI trajectory of a constructor over the V6-hybrid era |
+| **The Model** | SHAP attribution and model internals, made interpretable |
 
-## Headline finding — Sprint 1
+**Live:** https://nnx9pdbkj7agwwsbn2m7bb.streamlit.app/
+
+## Headline results
+
+**Constructor points model — GradientBoostingRegressor**
+
+| Metric | Value |
+| --- | --- |
+| Test R² | 0.976 |
+| 5-fold CV R² | 0.950 |
+| RMSE | 38.7 |
+| MAE | 29.0 |
+
+**Explainability.** SHAP attribution is dominated by average grid position (`avg_grid`), accounting for ~72% of mean \|SHAP\| — qualifying pace is the single largest driver of predicted constructor points, confirming the Sprint 1 EDA signal.
+
+**Podium probability — LogisticRegression + Platt calibration**
+
+| Metric | Value |
+| --- | --- |
+| AUC-ROC | 0.928 |
+| Brier score | 0.071 |
+
+*(evaluated on a held-out season)*
+
+**BVI validation.** McLaren tops the era at **85.6 / 100** (2024). Across 112 team-seasons, the BVI correlates with final championship rank at **Spearman ρ ≈ 0.72** — the index tracks competitive reality while remaining decomposable into its performance and consistency drivers.
+
+**Supporting EDA finding (Sprint 1).** Average qualifying gap-to-pole correlates with total constructor points at **Pearson r ≈ –0.79** across 112 team-seasons (p < 0.001).
 
 ![Qualifying pace predicts championship points](https://github.com/DevDharmik/Pitwall-intelligence/raw/main/reports/eda_06_qual_vs_points.png)
 
-Average qualifying gap-to-pole correlates with total constructor points at **Pearson r ≈ –0.79** across 112 team-seasons (p < 0.001). Qualifying pace anchors the BVI Performance dimension.
+> Metrics reflect committed notebook outputs (`reports/*.csv`); re-running notebooks `01 → 07` reproduces them end to end.
 
 ## Dataset
 
 Single source — **[Jolpica-F1 API](https://api.jolpi.ca/ergast/)**, an actively maintained mirror of the Ergast Developer API for Formula 1. No Kaggle imports, no third-party aggregators, no synthetic data. Every record is fetched live and cached as JSON for reproducibility.
 
-**Focal era:** V6 hybrid, **2014–2024** — stable technical regulations enabling like-for-like cross-season comparison.
+**Focal era:** V6 hybrid, 2014–2025 — stable technical regulations enabling like-for-like cross-season comparison.
 
 | Table | Rows | Coverage |
 | --- | --- | --- |
@@ -67,34 +96,31 @@ Single source — **[Jolpica-F1 API](https://api.jolpi.ca/ergast/)**, an activel
 
 ```
 Jolpica API
-  └─► ETL (requests + tenacity, JSON cache)
-      └─► Preprocessing (DNF typing · qual parsing · gap-to-pole · season norm)
-          └─► EDA (9 analyses)
-              └─► Models
-                  ├─ Baseline: Linear Regression · Decision Tree
-                  └─ Advanced: Gradient Boosting · Logistic Regression + Platt
-                      └─► Evaluation (5-fold CV RMSE / R² · AUC-ROC on held-out season)
-                          └─► SHAP attribution
-                              └─► BVI synthesis (Performance 60% + Consistency 40%)
-                                  └─► Streamlit dashboard
+ └─► ETL (requests + tenacity, JSON cache → SQLite)
+   └─► Preprocessing (DNF typing · qual parsing · gap-to-pole · finish-rate allow-list · season norm)
+     └─► EDA (9 analyses)
+       └─► Feature engineering
+         └─► Models
+            ├─ Baseline: Linear Regression · Decision Tree
+            └─ Advanced: Gradient Boosting (points) · Logistic Regression + Platt (podium)
+           └─► Evaluation (5-fold CV R²/RMSE/MAE · AUC-ROC + Brier on held-out season)
+             └─► SHAP attribution
+               └─► BVI synthesis (Performance 60% + Consistency 40%, season min-max)
+                 └─► Streamlit dashboard (5 tabs)
 ```
 
-## Dashboard (Sprint 4)
+**Sprint 3 data-integrity correction.** `finish_rate` was initially constant at 1.0 because the source populates a finishing position for every classified driver, including retirements. Fixed with an explicit status allow-list (`Finished` / `Lapped` / `+N Lap(s)`), restoring a meaningful reliability signal for the Consistency dimension.
 
-A live, sponsor-facing Streamlit app that wraps the BVI and its model explanations into one interactive tool. A sidebar season slider (2014–2024) and an **All-era view** toggle drive a header KPI strip (top brand value, most consistent team, biggest over-performer, wins on the grid) and five views:
+## Models & evaluation
 
-- **Grid** — the signature broadcast "timing tower": constructors ranked by BVI, each bar split into its Performance and Consistency contribution, alongside a *value-vs-championship* scatter that surfaces the teams the BVI rates differently from the final standings.
-- **Head-to-head** — pick any two constructors and compare them on a normalised radar (Performance, Consistency, Brand value, Qualifying pace, Reliability, Podiums, Wins) plus a stat-by-stat table with the winner of each row highlighted.
-- **Perf × Consistency** — a scatter of the two BVI dimensions with mid-point quadrant lines (dominant · reliable-but-slow · fast-but-fragile · backmarkers); bubble size encodes championship points.
-- **Evolution** — BVI trajectories across 2014–2024 for any selection of teams, with the Mercedes and Red Bull title eras shaded behind.
-- **The model** — the validated metric cards (test R² 0.976, CV R² 0.95, RMSE 38.7, MAE 29), a model leaderboard, the Gradient Boosting feature importances, the 2024 predicted-vs-actual points, and the SHAP beeswarm explanations.
+| Stage | Model | Target | Headline |
+| --- | --- | --- | --- |
+| Baseline | Linear Regression, Decision Tree | Constructor points | Reference floor |
+| Advanced | GradientBoostingRegressor | Constructor points | Test R² 0.976 · CV R² 0.950 |
+| Advanced | LogisticRegression + Platt | Podium probability | AUC-ROC 0.928 · Brier 0.071 |
+| Explainability | SHAP (TreeExplainer) | — | `avg_grid` ≈ 72% of mean \|SHAP\| |
 
-```bash
-pip install -r requirements.txt
-streamlit run app.py
-```
-
-The app reads the season-normalised BVI table (`data/exports/bvi_scores.csv`) and the team-season feature table (`data/exports/team_season_stats.csv`), loads the pre-trained model (`models/gbr_total_points_v1.joblib`) to surface its feature importances, and the SHAP beeswarm PNGs from `reports/`. It **retrains nothing** — it consumes the Sprint 2–3 outputs directly.
+Evaluation uses 5-fold cross-validation for the regressor and a held-out season for the calibrated classifier, avoiding within-season leakage.
 
 ## Tech stack
 
@@ -109,38 +135,55 @@ The app reads the season-normalised BVI table (`data/exports/bvi_scores.csv`) an
 | 1 | 23 Apr – 4 May | ETL pipeline · preprocessing · EDA | ✅ Complete |
 | 2 | 5 May – 18 May | Baseline + advanced models | ✅ Complete |
 | 3 | 19 May – 1 Jun | BVI synthesis · SHAP attribution | ✅ Complete |
-| 4 | 2 Jun – 15 Jun | Streamlit dashboard | 🔵 In progress · deployed |
-| 5 | 16 Jun – 22 Jun | Report polish · viva prep | ⚪ Planned |
+| 4 | 2 Jun – 15 Jun | Streamlit dashboard | ✅ Complete |
+| 5 | 16 Jun – 22 Jun | Report polish · viva prep | 🔄 In progress |
 
 **Final report due:** 22 June 2026 · **Defence:** 6 July 2026
+
+## Key findings by sprint
+
+**Sprint 1 — EDA**
+1. **Qualifying speed is the strongest single predictor of season points.** Pearson r ≈ –0.79 across 112 team-seasons (p < 0.001).
+2. **The era is defined by sustained dominance.** Mercedes won eight consecutive Constructors' Championships (2014–2021), then Red Bull (2022, 2023) and McLaren (2024) — motivating within-season normalisation.
+3. **Constructor rank volatility varies sharply.** Williams (σ = 2.83) and McLaren (σ = 2.44) are the most volatile; Force India (σ = 0.84), Red Bull (σ = 0.92), and Mercedes (σ = 1.04) the most stable — feeding the Consistency dimension.
+4. **Season concentration ranges from 0.503 (2020, most competitive) to 0.619 (2016, most concentrated)**, era-wide mean Gini 0.556.
+
+**Sprints 2–3 — modelling & synthesis**
+5. Gradient Boosting lifts points prediction to Test R² 0.976 (CV R² 0.950) over the linear/tree baselines.
+6. SHAP confirms qualifying pace (`avg_grid` ≈ 72%) as the dominant attributed feature — the EDA signal survives into the model.
+7. The calibrated podium classifier reaches AUC-ROC 0.928 (Brier 0.071), feeding the Performance dimension as a probability rather than a binary.
+
+**Sprint 4 — dashboard**
+8. BVI operationalised as a live, five-tab Streamlit product; McLaren tops the era at 85.6/100, BVI–championship Spearman ρ ≈ 0.72.
 
 ## Repository structure
 
 ```
-PitWall/
+PitWall-intelligence/
 ├── notebooks/
-│   ├── 01_etl_jolpica.ipynb      # Jolpica → SQLite, JSON caching + retry
-│   ├── 02_preprocessing.ipynb    # cleaning, feature engineering, season normalisation
-│   ├── 03_eda.ipynb              # nine analyses driving Sprint 1 findings
-│   ├── 04_features.ipynb         # team-season feature matrix
-│   ├── 05_baseline_models.ipynb  # Linear Regression · Decision Tree
-│   ├── 06_advanced_models.ipynb  # Gradient Boosting points model
-│   └── 07_bvi_shap.ipynb         # podium classifier · SHAP · BVI synthesis
-├── app.py                        # Streamlit dashboard (Sprint 4)
+│   ├── 01_etl_jolpica.ipynb       # Jolpica → SQLite, JSON caching + retry (tenacity)
+│   ├── 02_preprocessing.ipynb     # cleaning, DNF typing, qual parsing, season normalisation
+│   ├── 03_eda.ipynb               # nine analyses driving Sprint 1 findings
+│   ├── 04_features.ipynb          # feature engineering for modelling
+│   ├── 05_baselines.ipynb         # Linear Regression · Decision Tree
+│   ├── 06_advanced.ipynb          # Gradient Boosting · Logistic Regression + Platt
+│   └── 07_bvi_shap.ipynb          # BVI synthesis + SHAP attribution
+├── dashboard/
+│   └── app.py                     # Streamlit BVI dashboard (reads exports + saved model)
 ├── models/
-│   └── gbr_total_points_v1.joblib  # trained Gradient Boosting model (2014–2023 → 2024 test)
-├── reports/                      # EDA + SHAP visual outputs (PNG, CSV)
+│   └── gbr_points.joblib          # trained GradientBoosting model
+├── reports/                       # EDA + model figures (PNG), metrics (CSV)
 ├── data/
-│   ├── pitwall.db                # SQLite store (gitignored)
-│   ├── raw/                      # cached Jolpica JSON (gitignored)
-│   └── exports/                  # bvi_scores.csv, team_season_stats.csv, and other exports
+│   ├── pitwall.db                 # SQLite store (gitignored)
+│   ├── raw/                       # cached Jolpica JSON (gitignored)
+│   └── exports/                   # pre-computed CSVs consumed by the dashboard
 ├── requirements.txt
 ├── LICENSE
 ├── .gitignore
 └── README.md
 ```
 
-## Reproducing
+## Reproducing the project
 
 ```bash
 git clone https://github.com/DevDharmik/Pitwall-intelligence.git
@@ -148,8 +191,18 @@ cd Pitwall-intelligence
 pip install -r requirements.txt
 ```
 
-Open the notebooks in order (`01`→`07`) in Colab or Jupyter; they detect Colab vs a local environment automatically. `01_etl_jolpica.ipynb` populates `data/pitwall.db` from Jolpica on first run (cached JSON in `data/raw/` is reused afterwards), and `07_bvi_shap.ipynb` writes `data/exports/bvi_scores.csv`. Then launch the dashboard with `streamlit run app.py`.
+**Notebooks** (run in order in Colab or Jupyter):
+1. `01_etl_jolpica.ipynb` — populates `data/pitwall.db` from Jolpica; cached JSON in `data/raw/` is reused on later runs.
+2. `02_preprocessing.ipynb` — builds the analytical tables.
+3. `03_eda.ipynb` — generates the figures in `reports/`.
+4. `04_features.ipynb` — assembles the modelling feature set.
+5. `05_baselines.ipynb` / `06_advanced.ipynb` — train and evaluate the models; export metrics to `reports/`.
+6. `07_bvi_shap.ipynb` — builds the BVI and SHAP attributions; writes the dashboard exports.
 
+**Dashboard** (local):
+```bash
+streamlit run dashboard/app.py
+```
 End-to-end notebook runtime: ~10 minutes on a free Colab tier, dominated by initial Jolpica ingestion.
 
 ## Author
@@ -161,4 +214,4 @@ M.Sc. Data Science · University of Europe for Applied Sciences (Berlin / Potsda
 
 ## License
 
-[MIT License](LICENSE) for code. Reports and figures licensed under [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/).
+[MIT License](https://github.com/DevDharmik/Pitwall-intelligence/blob/main/LICENSE) for code. Reports and figures licensed under [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/).
